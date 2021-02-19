@@ -17,7 +17,7 @@ def shared(song_a, song_b, database):
 
 
 def sim_euclidean(song_a, song_b, database):
-    """Returns a similarity score from the euclidean distance between the ratings of two students given a database."""
+    """Returns a similarity score using the euclidean distance formula between the ratings of two songs given a database."""
     both_rated = shared(song_a, song_b, database)
     point_summation = 0
 
@@ -29,9 +29,9 @@ def sim_euclidean(song_a, song_b, database):
     return 1 / (1 + euclidean_distance)  # this is done because the similarity score should go up as songs are more similar
 
 
-def sim_pearson(studentID_a, studentID_b, database):
-    """Returns a similarity score from the pearson correlation coefficient between the ratings of two students given a database."""
-    both_rated = shared(studentID_a, studentID_b, database)
+def sim_pearson(song_a, song_b, database):
+    """Returns a similarity score using the pearson correlation coefficient formula between the ratings of two songs given a database."""
+    both_rated = shared(song_a, song_b, database)
     n = len(both_rated)
 
     sum_a = 0
@@ -41,12 +41,12 @@ def sim_pearson(studentID_a, studentID_b, database):
     sum_ab = 0
 
     # find all sums
-    for song in both_rated:
-        sum_a += database[studentID_a][song]
-        sum_b += database[studentID_b][song]
-        sum_ab += database[studentID_a][song] * database[studentID_b][song]
-        sq_sum_a += database[studentID_a][song] ** 2
-        sq_sum_b += database[studentID_b][song] ** 2
+    for sID in both_rated:
+        sum_a += database[song_a][sID]
+        sum_b += database[song_b][sID]
+        sum_ab += database[song_a][sID] * database[song_b][sID]
+        sq_sum_a += database[song_a][sID] ** 2
+        sq_sum_b += database[song_b][sID] ** 2
 
     numerator = sum_ab - (sum_a * sum_b) / n
 
@@ -55,8 +55,8 @@ def sim_pearson(studentID_a, studentID_b, database):
     return numerator / denominator
 
 
-def top_matches(studentID, database, n=5, sim_function=sim_euclidean):
-    """Returns the top n matches using the sim_function for a student given a database."""
+def top_matches(q_song, database, n=5, sim_function=sim_euclidean):
+    """Returns the top n matches using the sim_function for a song given a database."""
     matches = []
     
     # sorting function for .sort() : sort by the similarity score
@@ -64,11 +64,14 @@ def top_matches(studentID, database, n=5, sim_function=sim_euclidean):
         return e[1]
 
     # make a list of the similarity scores between the key student and all other students
-    for sID in database:
-        if sID != studentID:
-            matches.append((sID, sim_function(studentID, sID, database)))  # list of (student ID, similarity score)
+    for song in database:
+        if song != q_song:
+            matches.append((song, sim_function(q_song, song, database)))  # list of (student ID, similarity score)
 
     matches.sort(key=sort_by_sim_score, reverse=True)
 
     # return a list of the top n matches
-    return [matches[i] for i in range(n) if i <= len(matches) - 1]
+    if n == 0:
+        return matches
+    else:
+        return [matches[i] for i in range(n) if i <= len(matches) - 1]
